@@ -4,54 +4,27 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var app = express();
+var server = require('http').createServer(app);
+var http = require('http').Server(app);
+var io = require('socket.io')(server);
+server.listen(4000);
 
 var index = require('./routes/index');
 var users = require('./routes/users');
 var mongoose = require('mongoose');
+var Kittens=require('./Schema/kittens');
 mongoose.connect('mongodb://localhost/test');
+
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function (callback) {
   // yay!
-  console.log('成功连接');
-  var kittySchema = mongoose.Schema({
-    name: String
-})
-
-// NOTE: methods must be added to the schema before compiling it with mongoose.model()
-kittySchema.methods.speak = function () {
-  var greeting = this.name
-  ? "Meow name is " + this.name
-  : "I don't have a name";
-  console.log(greeting);
-}
-var Kitten = mongoose.model('Kitten', kittySchema);
-
-var silence = new Kitten({ name: 'Silence' });
-console.log(silence.name); // 'Silence'
-
-var fluffy = new Kitten({ name: 'fluffy' });
-fluffy.speak(); // "Meow name is fluffy"
-
-fluffy.save(function (err, fluffy) {
-
-if (err) return console.error(err);
-fluffy.speak();
-});
-
-Kitten.find(function (err, kittens) {
-
-if (err) return console.error(err);
-console.log(kittens);
-})
-
-Kitten.find({ name: /^fluff/ }, callback);
-
+  console.log('成功连接数据库');
 });
 
 var app = express();
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -66,10 +39,35 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
+app.get('/new', function(req, res){
+  res.sendFile(__dirname + '/new.html');
+  });
 app.get('/jmh', function (req, res) {
   // console.log(req,res);
-  res.send(silence.name);
+  // res.send(silence.name);
   
+
+// // NOTE: methods must be added to the schema before compiling it with mongoose.model()
+// kittySchema.methods.speak = function () {
+//   var greeting = this.name
+//   ? "Meow name is " + this.name
+//   : "I don't have a name";
+//   console.log(greeting);
+// }
+
+
+// // Kitten.speak();
+
+
+// var fluffy = new Kitten({ name: 'fluff' });
+// fluffy.speak();
+
+
+Kittens.find({name:'fluffy',psw:'123456'},function (err, kittens) {
+
+if (err) return console.error(err);
+console.log(kittens);
+})
 }); 
 
 // catch 404 and forward to error handler
@@ -89,5 +87,15 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+var numUsers = 0;
+
+
+
+io.on('connection', function (socket) {
+  console.log('log')
+  
+});
+
 
 module.exports = app;
