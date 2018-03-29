@@ -1,4 +1,4 @@
-var express = require('express');
+﻿var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -7,8 +7,12 @@ var bodyParser = require('body-parser');
 var app = express();
 var server = require('http').createServer(app);
 var http = require('http').Server(app);
-var io = require('socket.io')(server);
-server.listen(4000);
+const io = require('socket.io')(server)
+var port = process.env.PORT || 4000;
+
+server.listen(port, function () {
+  console.log('Server listening at port %d', port);
+});
 
 var index = require('./routes/index');
 var users = require('./routes/users');
